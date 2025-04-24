@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rock Paper Scissors</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(to bottom, #ea975b, #f037e3f8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .game-screen {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .choice-btn {
+            padding: 12px 24px;
+            margin: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+            min-width: 100px;
+            /* Ensure touch target size */
+            min-height: 40px;
+            /* Ensure touch target size */
+        }
+
+        .choice-btn:hover {
+            transition: all 0.3s ease;
+            opacity: 0.9;
+        }
+
+        .choice-display {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cd1,
+        .cd2 {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+        }
+
+        .cd2 {
+            margin-left: 25px;
+        }
+
+        .cd1 {
+            margin-right: 40px;
+        }
+
+        .choices-display {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .choice-image {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            margin: 10px;
+            transition: opacity 0.3s ease;
+        }
+
+        #rock {
+            background-color: #db4646;
+            color: white;
+        }
+
+        #paper {
+            background-color: #3d74cd;
+            color: white;
+        }
+
+        #scissors {
+            background-color: #4aac6e;
+            color: white;
+        }
+
+        .result {
+            margin-top: 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .score {
+            margin-top: 20px;
+            font-size: 1.2rem;
+        }
+
+        #restart {
+            margin-top: 20px;
+            padding: 12px 24px;
+            background-color: #f97316;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        #restart:hover {
+            background-color: #d97706;
+            /* Darker orange */
+        }
+
+        @media (max-width: 600px) {
+            .game-screen {
+                padding: 20px;
+            }
+
+            .choice-btn {
+                width: calc(50% - 20px);
+                /* Two buttons per row on small screens */
+                margin: 5px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <h1>Rock Paper Scissors</h1>
+        <div class="container">
+            <div class="game-screen">
+                <div id="round" class="round">Round 1 of 3</div>
+                <div class="score" id="score"> Player: 0 | Computer: 0</div>
+                <div class="choices-display">
+                    <div class="cd1">
+                        <img id="player-display" class="choice-image" src="" alt="Player's choice">
+                    </div>
+                    <div class="cd2">
+                        <img id="computer-display" class="choice-image" src="" alt="Computer's choice">
+                    </div>
+                </div>
+                <p>Choose your weapon:</p>
+                <div class="choices">
+                    <button class="choice-btn" id="rock" type="button">✊ Rock</button>
+                    <button class="choice-btn" id="paper" type="button">✋ Paper</button>
+                    <button class="choice-btn" id="scissors" type="button">✌️ Scissors</button>
+                </div>
+
+                <div class="result" id="result"> Choose your move!</div>
+                <button id="restart" type="button">Play Again</button>
+            </div>
+        </div>
+    </main>
+    <script>
+        const round = document.getElementById('round');
+        const score = document.getElementById('score');
+        const playerDisplay = document.getElementById('player-display');
+        const computerDisplay = document.getElementById('computer-display');
+        const rock = document.getElementById('rock');
+        const paper = document.getElementById('paper');
+        const scissors = document.getElementById('scissors');
+        const result = document.getElementById('result');
+        const restart = document.getElementById('restart');
+
+        let playerScore = 0;
+        let computerScore = 0;
+        let roundNum = 1;
+        const maxRounds = 3;
+        let playerChoice;
+        let computerChoice;
+
+        // Add event listeners to choice buttons
+        rock.addEventListener('click', () => {
+            playerChoice = 'rock';
+            playRound();
+        })
+        paper.addEventListener('click', () => {
+            playerChoice = 'paper';
+            playRound();
+        })
+        scissors.addEventListener('click', () => {
+            playerChoice = 'scissors';
+            playRound();
+        })
+
+        const choiceList = ['rock', 'paper', 'scissors'];
+
+        //function for the computer to choose a random option
+        function getComputerChoice() {
+            const randomIndex = Math.floor(Math.random() * choiceList.length);
+            return computerChoice = choiceList[randomIndex];
+        }
+
+        //function to play a round
+        function playRound() {
+            computerChoice = getComputerChoice();
+
+            // Update choice displays
+            playerDisplay.src = getImagePath(playerChoice);
+            computerDisplay.src = getImagePath(computerChoice);
+
+            const winner = determineWinner(playerChoice, computerChoice);
+            displayResult(playerChoice, computerChoice, winner);
+            updateScore(winner);
+
+            roundNum++;
+            if (roundNum <= maxRounds) {
+                round.textContent = `Round ${roundNum} of ${maxRounds}`;
+            } else {
+                endGame();
+            }
+        }
+
+        function getImagePath(choice) {
+            return {
+                rock: 'images/rock.jpeg',
+                paper: 'images/paper.jpeg',
+                scissors: 'images/scissors.jpeg'
+            }[choice] || '';
+        }
+
+        //same determineWinner function
+        function determineWinner(playerChoice, computerChoice) {
+            if (playerChoice === computerChoice) {
+                return 'tie';
+            } else if ((playerChoice === 'rock' && computerChoice === 'scissors') || (playerChoice === 'paper' && computerChoice === 'rock') || (playerChoice === 'scissors' && computerChoice === 'paper')) {
+                return 'player';
+            } else {
+                return 'computer';
+            }
+        }
+
+        function displayResult(playerChoice, computerChoice, winner) {
+            let message = `You chose ${playerChoice}, Computer chose ${computerChoice}. `;
+            if (winner === 'player') {
+                message += 'You Win!';
+                result.style.color = '#22c55e';
+            } else if (winner === 'computer') {
+                message += 'Computer Wins!';
+                result.style.color = '#ef4444';
+            } else {
+                message += "It's a Tie!";
+                result.style.color = '#3b82f6';
+            }
+            result.textContent = message;
+        }
+
+        function updateScore(winner) {
+            if (winner === 'player') playerScore++;
+            else if (winner === 'computer') computerScore++;
+            score.textContent = `Player: ${playerScore} | Computer: ${computerScore}`;
+        }
+
+        function endGame() {
+            // Disable buttons
+            rock.disabled = paper.disabled = scissors.disabled = true;
+            // Show final result
+            result.textContent += ` Game Over! ${playerScore > computerScore ? "You win the game!" :
+                    computerScore > playerScore ? "Computer wins the game!" : "It's a tie!"
+                }`;
+        }
+
+        // Restart game functionality
+        restart.addEventListener('click', () => {
+            playerScore = computerScore = 0;
+            roundNum = 1;
+            round.textContent = `Round ${roundNum} of ${maxRounds}`;
+            score.textContent = `Player: 0 | Computer: 0`;
+            result.textContent = 'Choose your move!';
+            result.style.color = 'inherit';
+            playerDisplay.textContent = computerDisplay.textContent = '';
+            rock.disabled = paper.disabled = scissors.disabled = false;
+        });
+    </script>
+</body>
+
+</html>
