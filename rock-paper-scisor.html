@@ -6,9 +6,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rock Paper Scissors</title>
     <style>
+
+        @keyframes gradientBG{
+            0%{
+                background-position: 0% 50%;
+            }
+            50%{
+                background-position: 100% 50%; 
+            }
+            100%{
+                background-position: 0% 50%;
+            }
+        }
+
         body {
             font-family: 'Roboto', sans-serif;
-            background: linear-gradient(to bottom, #ea975b, #f037e3f8);
+            background: linear-gradient(-45deg, #ea975b, #f037e3f8, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -77,6 +92,7 @@
         }
 
         .choice-image {
+            display: none;
             width: 80px;
             height: 80px;
             object-fit: contain;
@@ -127,6 +143,91 @@
             /* Darker orange */
         }
 
+        .modal{
+            display: flex;
+            flex-direction: column;
+            position:  fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.753);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        .modal-content{
+            background-color: white;
+            padding: 40px;
+            border-radius: 15px;
+            width: 80%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .modal h2{
+            color: #c8c2c2;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .modal input{
+            width: 40%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .modal input:focus{
+            outline:none;
+            border-color: #f97316;
+        }
+
+        .modal button{
+            background-color: #f97316;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 15px;
+            width: 40%;
+        }
+
+        .modal button:hover{
+            background-color: #ea580c;
+            transform: translateY(-2px);
+        }
+
+        .leaderboard{
+            margin-top: 20px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        @keyframes fadeIn{
+            from{ opacity:0;}
+            to{ opacity:1; }
+        }
+
+        .choice-btn{
+            transition: transform 0.2s;
+        }
+        .choice-btn:hover{
+            transform: scale(1.05);
+        }
+
+
         @media (max-width: 600px) {
             .game-screen {
                 padding: 20px;
@@ -142,6 +243,11 @@
 </head>
 
 <body>
+    <div id="nameModal" class="modal">
+        <h2>Enter Your name </h2>
+        <input type="text" id="playerName" placeholder="Your name">
+        <button id="startGame">Start Game</button>
+    </div>
     <main>
         <h1>Rock Paper Scissors</h1>
         <div class="container">
@@ -165,10 +271,19 @@
 
                 <div class="result" id="result"> Choose your move!</div>
                 <button id="restart" type="button">Play Again</button>
+                <div id="leaderboard" class="leaderboard">
+                    <h3>Leaderboard</h3>
+                    <ul id="leaderboardList"></ul>
+
+                </div>
             </div>
         </div>
     </main>
     <script>
+        const nameModal = document.getElementById('nameModal');
+        const playerNameInput = document.getElementById('playerName');
+        const startGameBtn = document.getElementById('startGame');
+        const leaderboardList = document.getElementById('leaderboardList');
         const round = document.getElementById('round');
         const score = document.getElementById('score');
         const playerDisplay = document.getElementById('player-display');
@@ -179,12 +294,21 @@
         const result = document.getElementById('result');
         const restart = document.getElementById('restart');
 
+        let playerName = '';
         let playerScore = 0;
         let computerScore = 0;
         let roundNum = 1;
         const maxRounds = 3;
         let playerChoice;
         let computerChoice;
+
+        nameModal.style.display = 'flex';
+
+        startGameBtn.addEventListener('click', () => {
+            playerName = playerNameInput.value.trim() || 'Player';
+            nameModal.style.display = 'none';
+            updateLeaderboard();
+        })
 
         // Add event listeners to choice buttons
         rock.addEventListener('click', () => {
@@ -211,7 +335,8 @@
         //function to play a round
         function playRound() {
             computerChoice = getComputerChoice();
-
+            playerDisplay.style.display = 'block';
+            computerDisplay.style.display = 'block';
             // Update choice displays
             playerDisplay.src = getImagePath(playerChoice);
             computerDisplay.src = getImagePath(computerChoice);
@@ -234,6 +359,11 @@
                 paper: 'images/paper.jpeg',
                 scissors: 'images/scissors.jpeg'
             }[choice] || '';
+        }
+
+        function updateLeaderboard(){
+            const scores = JSON.parse(localStorage.getItem('rpsScores')) || [];
+            leaderboardList.innerHTML = scores.sort((a,b) => b.score - a.score).slice(0,10).map(score => `<li>${score.name}: ${score.score}</li>`).join('');
         }
 
         //same determineWinner function
@@ -263,8 +393,8 @@
         }
 
         function updateScore(winner) {
-            if (winner === 'player') playerScore++;
-            else if (winner === 'computer') computerScore++;
+            if (winner === 'player') playerScore += 10;
+            else if (winner === 'computer') computerScore += 10;
             score.textContent = `Player: ${playerScore} | Computer: ${computerScore}`;
         }
 
@@ -275,6 +405,14 @@
             result.textContent += ` Game Over! ${playerScore > computerScore ? "You win the game!" :
                     computerScore > playerScore ? "Computer wins the game!" : "It's a tie!"
                 }`;
+            //save leaderboard
+            const scores = JSON.parse(localStorage.getItem('rpsScores')) || [];
+            scores.push({
+                name: playerName,
+                score: playerScore
+            })
+            localStorage.setItem('rpsScores', JSON.stringify(scores));
+            updateLeaderboard();
         }
 
         // Restart game functionality
@@ -287,6 +425,9 @@
             result.style.color = 'inherit';
             playerDisplay.textContent = computerDisplay.textContent = '';
             rock.disabled = paper.disabled = scissors.disabled = false;
+            playerDisplay.style.display = 'none';
+            computerDisplay.style.display = 'none';
+
         });
     </script>
 </body>
